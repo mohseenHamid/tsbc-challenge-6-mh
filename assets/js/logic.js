@@ -61,15 +61,27 @@ let startQuizBtn = document.getElementById("start");
 let endScreen = document.getElementById("end-screen");
 let feedback = document.getElementById("feedback");
 let finalScore = document.getElementById("final-score");
+let choiceMessage = document.getElementById("response-message");
+let regSbmtBtn = document.getElementById("submit");
+let regInput = document.getElementById("initials");
 
 let shuffledQsArray = shuffle(questions);
 let count = 0;
 let score = 0;
 let correctAnswer = "";
+const timeTotal = questions.length * 10;
+let secondsLeft = timeTotal;
 
 function gameInit() {
 	startScreen.classList.remove("hide");
 	questionsBlock.classList.add("hide");
+
+	shuffledQsArray = shuffle(questions);
+	count = 0;
+	score = 0;
+	correctAnswer = "";
+	secondsLeft = timeTotal;
+	timerCount.textContent = timeTotal;
 }
 
 // Function for getting a random element's value from an array (taken from challenge 5)
@@ -95,32 +107,86 @@ function shuffle(array) {
 	return array;
 }
 
-function endGame(e) {
-	console.log(e.target);
-	questionsBlock.classList.add("hide");
-	endScreen.classList.remove("hide");
-}
-
 function choiceSelection(e) {
-	startScreen.classList.add("hide");
-	questionsBlock.classList.remove("hide");
-
-	if (count > 0) {
-		shuffledQsArray[count - 1].responses.forEach(function (item) {
+	if (count < questions.length) {
+		shuffledQsArray[count].responses.forEach(function (item) {
 			if (item.correct == true) {
 				correctAnswer = item.answer;
 			}
 		});
-	}
 
-	console.log(e.target);
-	console.log(correctAnswer);
-	if (e.target.textContent == correctAnswer) {
-		score += 5;
-		console.log(score);
-	}
+		if (e.target.textContent == correctAnswer) {
+			score += 5;
+			choiceMessage.textContent = "Correct!";
+		} else {
+			if (secondsLeft >= 5) {
+				secondsLeft -= 5;
+				choiceMessage.textContent = "That's so wrong!";
+				timerCount.style = "font-weight: bold; font-size: 200%; color: purple";
+				timerCount.style.transition = "all 1.5s";
+				setTimeout(function () {
+					timerCount.style =
+						"font-weight: normal; font-size: 120%; color: black";
+					timerCount.style.transition = "all 1.5s";
+				}, 1000);
+			} else {
+				endGame();
+			}
+		}
 
-	console.log("endgameNOT");
+		setTimeout(function () {
+			choiceMessage.textContent = "";
+		}, 1000);
+
+		count++;
+		if (count <= 4) {
+			displayQ();
+		} else if (count === 5) {
+			setTimeout(function () {
+				endGame();
+			}, 2000);
+		}
+	}
+}
+
+// function registerScore() {
+// if (regInput )
+// }
+
+function endGame() {
+	questionsBlock.classList.add("hide");
+	endScreen.classList.remove("hide");
+
+	finalScore.textContent = score;
+	finalScore.style.fontWeight = "bold";
+
+	regSbmtBtn.addEventListener("click", registerScore);
+}
+
+function setTime() {
+	// Sets interval in variable
+	let timerInterval = setInterval(function () {
+		secondsLeft--;
+		timerCount.textContent = secondsLeft;
+
+		if (secondsLeft == 0 || count == questions.length) {
+			// Stops execution of action at set interval
+			clearInterval(timerInterval);
+			// Calls function to create and append image
+			endGame();
+		}
+	}, 1000);
+}
+
+function gameConditions() {
+	startScreen.classList.add("hide");
+	questionsBlock.classList.remove("hide");
+
+	setTime();
+	displayQ();
+}
+
+function displayQ() {
 	qTitle.textContent = shuffledQsArray[count].question;
 	qChoicesBlock.textContent = "";
 
@@ -137,10 +203,8 @@ function choiceSelection(e) {
 
 		choice.addEventListener("click", choiceSelection);
 	}
-
-	count++;
 }
 
-startQuizBtn.addEventListener("click", choiceSelection);
+startQuizBtn.addEventListener("click", gameConditions);
 
 gameInit();
