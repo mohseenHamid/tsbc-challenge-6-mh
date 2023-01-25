@@ -21,7 +21,7 @@ SO THAT I can gauge my progress compared to my peers
 3. When an answer is clicked, the next question appears
    - If the answer is incorrect, time is subtracted from the timer
 4. The quiz ends when all questions are answered or the timer reaches 0
-5. When the game ends:
+5. When the game ends
    - The player's score is displayed
    - The player has the ability to register their initials
    - The player's initials and score are saved to localStorage

@@ -69,11 +69,15 @@ let regErrorDisplay = document.getElementById("msg-alert");
 
 // Global variables
 let shuffledQsArray = shuffle(questions);
+// Keeps track of the question number + index of the shuffled questions array
 let count = 0;
+// Stores the player's points tally
 let score = 0;
 let correctAnswer = "";
 const timeTotal = questions.length * 10;
 let secondsLeft = timeTotal;
+// Array to store all player results that's then pushed to localStorage
+let resultsArray = [];
 
 // Set game conditions
 gameInit();
@@ -114,51 +118,6 @@ function shuffle(array) {
 	return array;
 }
 
-// Function to validate user's quiz question responses
-function choiceSelection(e) {
-	if (count < questions.length) {
-		shuffledQsArray[count].responses.forEach(function (item) {
-			if (item.correct == true) {
-				correctAnswer = item.answer;
-			}
-		});
-
-		if (e.target.textContent == correctAnswer) {
-			score += 5;
-			choiceMessage.textContent = "Correct!";
-		} else {
-			if (secondsLeft >= 5) {
-				secondsLeft -= 5;
-				choiceMessage.textContent = "That's so wrong!";
-				timerCount.style = "font-weight: bold; font-size: 200%; color: purple";
-				timerCount.style.transition = "all 1.5s";
-				setTimeout(function () {
-					timerCount.style =
-						"font-weight: normal; font-size: 120%; color: black";
-					timerCount.style.transition = "all 1.5s";
-				}, 1000);
-			} else {
-				endGame();
-			}
-		}
-
-		setTimeout(function () {
-			choiceMessage.textContent = "";
-		}, 1000);
-
-		count++;
-		if (count <= 4) {
-			displayQ();
-		} else if (count === 5) {
-			setTimeout(function () {
-				endGame();
-			}, 2000);
-		}
-	}
-}
-
-let resultsArray = [];
-
 function registerScore() {
 	let initials = regInput.value;
 
@@ -178,6 +137,7 @@ function registerScore() {
 	}
 }
 
+// Stops the game
 function endGame() {
 	questionsBlock.classList.add("hide");
 	endScreen.classList.remove("hide");
@@ -185,32 +145,78 @@ function endGame() {
 	finalScore.textContent = score;
 	finalScore.style.fontWeight = "bold";
 
+	// Calls the function that handles the player submission
 	regSbmtBtn.addEventListener("click", registerScore);
 }
 
+// Function that sets the timer and stops it upon game completion
 function setTime() {
 	// Sets interval in variable
 	let timerInterval = setInterval(function () {
 		secondsLeft--;
 		timerCount.textContent = secondsLeft;
 
+		// Endgame conditions to stop the timer
 		if (secondsLeft == 0 || count == questions.length) {
 			// Stops execution of action at set interval
 			clearInterval(timerInterval);
-			// Calls function to create and append image
+			// Stops the game
 			endGame();
 		}
 	}, 1000);
 }
 
-function gameConditions() {
-	startScreen.classList.add("hide");
-	questionsBlock.classList.remove("hide");
+// Function to validate user's quiz question responses
+function choiceSelection(e) {
+	if (count < questions.length) {
+		shuffledQsArray[count].responses.forEach(function (item) {
+			if (item.correct == true) {
+				correctAnswer = item.answer;
+			}
+		});
 
-	setTime();
-	displayQ();
+		// Tracking score + displaying relevant response message
+		if (e.target.textContent == correctAnswer) {
+			score += 5;
+			choiceMessage.textContent = "Correct!";
+		} else {
+			// Evalutaing an incorrect answer
+			if (secondsLeft >= 5) {
+				// Only reduce timer if enough seconds remain
+				secondsLeft -= 5;
+				choiceMessage.textContent = "That's so wrong!";
+				timerCount.style = "font-weight: bold; font-size: 200%; color: purple";
+				timerCount.style.transition = "all 1.5s";
+				setTimeout(function () {
+					timerCount.style =
+						"font-weight: normal; font-size: 120%; color: black";
+					timerCount.style.transition = "all 1.5s";
+				}, 1000);
+				// End the game if not enough time remaining
+			} else {
+				endGame();
+			}
+		}
+
+		// Only display the response message for a set amount of time
+		setTimeout(function () {
+			choiceMessage.textContent = "";
+		}, 1000);
+
+		count++;
+
+		if (count <= 4) {
+			displayQ();
+		} else if (count === 5) {
+			// End the game if final question is answered
+			setTimeout(function () {
+				endGame();
+			}, 2000);
+		}
+	}
 }
 
+// Function to display the next question
 function displayQ() {
 	qTitle.textContent = shuffledQsArray[count].question;
 	qChoicesBlock.textContent = "";
@@ -226,8 +232,23 @@ function displayQ() {
 		choice.textContent = shuffledChoicesArray[i].answer;
 		qChoicesBlock.appendChild(choice);
 
+		// Calls function that evaluates player's selection
 		choice.addEventListener("click", choiceSelection);
 	}
 }
 
+// Function to initialise game settings
+function gameConditions() {
+	// Hides the landing page
+	startScreen.classList.add("hide");
+	// Displays the empty questions div
+	questionsBlock.classList.remove("hide");
+
+	// Calls the timer function
+	setTime();
+	// Calls the function which populates the questions div
+	displayQ();
+}
+
+// Event listener for the start quiz btn set to game initialisation function
 startQuizBtn.addEventListener("click", gameConditions);
