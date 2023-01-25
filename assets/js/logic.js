@@ -66,6 +66,8 @@ let choiceMessage = document.getElementById("response-message");
 let regSbmtBtn = document.getElementById("submit");
 let regInput = document.getElementById("initials");
 let regErrorDisplay = document.getElementById("msg-alert");
+const correctAudio = new Audio("./assets/sfx/correct.wav");
+const incorrectAudio = new Audio("./assets/sfx/incorrect.wav");
 
 // Global variables
 let shuffledQsArray = shuffle(questions);
@@ -76,8 +78,6 @@ let score = 0;
 let correctAnswer = "";
 const timeTotal = questions.length * 10;
 let secondsLeft = timeTotal;
-// Array to store all player results that's then pushed to localStorage
-let resultsArray = [];
 
 // Set game conditions
 gameInit();
@@ -121,6 +121,14 @@ function shuffle(array) {
 function registerScore() {
 	let initials = regInput.value;
 
+	// Array to store all player results that's then pushed to localStorage
+	let resultsArray = [];
+
+	// Checking if localStorage is populated and retrieving if so
+	if (localStorage.getItem("result") !== null) {
+		resultsArray = JSON.parse(localStorage.getItem("result"));
+	}
+
 	if (initials.trim() === "") {
 		regErrorDisplay.textContent = "Please enter your initials";
 	} else if (initials.trim().length > 3) {
@@ -132,8 +140,11 @@ function registerScore() {
 
 		// Push result to resultsArray and submit updated resultsArray to localStorage as string
 		let result = initials + ": " + score;
+
 		resultsArray.push(result);
 		localStorage.setItem("result", JSON.stringify(resultsArray));
+
+		console.log(resultsArray);
 	}
 }
 
@@ -169,6 +180,7 @@ function setTime() {
 // Function to validate user's quiz question responses
 function choiceSelection(e) {
 	if (count < questions.length) {
+		// Determining the correct answer from the options and assigning to variable
 		shuffledQsArray[count].responses.forEach(function (item) {
 			if (item.correct == true) {
 				correctAnswer = item.answer;
@@ -179,7 +191,10 @@ function choiceSelection(e) {
 		if (e.target.textContent == correctAnswer) {
 			score += 5;
 			choiceMessage.textContent = "Correct!";
+			correctAudio.play();
 		} else {
+			incorrectAudio.play();
+
 			// Evalutaing an incorrect answer
 			if (secondsLeft >= 5) {
 				// Only reduce timer if enough seconds remain

@@ -1,4 +1,5 @@
 let scoresList = document.getElementById("highscores");
+let clearScoresBtn = document.getElementById("clear");
 
 renderRegistered();
 
@@ -15,3 +16,10 @@ function renderRegistered() {
 		}
 	});
 }
+
+clearScoresBtn.addEventListener("click", function () {
+	localStorage.clear();
+	while (scoresList.firstChild) {
+		scoresList.removeChild(scoresList.firstChild);
+	}
+});
