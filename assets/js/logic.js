@@ -51,6 +51,7 @@ Functions:
 - getHighscores()
 */
 
+// DOM variables
 let highscoresBtn = document.getElementsByClassName("scores");
 let timerCount = document.getElementById("time");
 let startScreen = document.getElementById("start-screen");
@@ -64,7 +65,9 @@ let finalScore = document.getElementById("final-score");
 let choiceMessage = document.getElementById("response-message");
 let regSbmtBtn = document.getElementById("submit");
 let regInput = document.getElementById("initials");
+let regErrorDisplay = document.getElementById("msg-alert");
 
+// Global variables
 let shuffledQsArray = shuffle(questions);
 let count = 0;
 let score = 0;
@@ -72,6 +75,10 @@ let correctAnswer = "";
 const timeTotal = questions.length * 10;
 let secondsLeft = timeTotal;
 
+// Set game conditions
+gameInit();
+
+// Function to initialise game conditions
 function gameInit() {
 	startScreen.classList.remove("hide");
 	questionsBlock.classList.add("hide");
@@ -84,13 +91,13 @@ function gameInit() {
 	timerCount.textContent = timeTotal;
 }
 
-// Function for getting a random element's value from an array (taken from challenge 5)
+// Auxiliary function for getting a random element's value from an array (taken from challenge 5)
 function getRandom(arr) {
 	let arrIndex = Math.floor(Math.random() * arr.length);
 	return arr[arrIndex];
 }
 
-// Shuffle array (inspired by stack)
+// Auxiliary function for shuffling an array (inspired by stack)
 // src: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 function shuffle(array) {
 	// Initialise random index variable
@@ -107,6 +114,7 @@ function shuffle(array) {
 	return array;
 }
 
+// Function to validate user's quiz question responses
 function choiceSelection(e) {
 	if (count < questions.length) {
 		shuffledQsArray[count].responses.forEach(function (item) {
@@ -149,9 +157,26 @@ function choiceSelection(e) {
 	}
 }
 
-// function registerScore() {
-// if (regInput )
-// }
+let resultsArray = [];
+
+function registerScore() {
+	let initials = regInput.value;
+
+	if (initials.trim() === "") {
+		regErrorDisplay.textContent = "Please enter your initials";
+	} else if (initials.trim().length > 3) {
+		regErrorDisplay.textContent = "Maximum of 3 characters";
+	} else {
+		regErrorDisplay.textContent = "Registered Successfully!";
+		regErrorDisplay.style.color = "green";
+		regInput.readOnly = true;
+
+		// Push result to resultsArray and submit updated resultsArray to localStorage as string
+		let result = initials + ": " + score;
+		resultsArray.push(result);
+		localStorage.setItem("result", JSON.stringify(resultsArray));
+	}
+}
 
 function endGame() {
 	questionsBlock.classList.add("hide");
@@ -206,5 +231,3 @@ function displayQ() {
 }
 
 startQuizBtn.addEventListener("click", gameConditions);
-
-gameInit();
